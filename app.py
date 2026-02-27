@@ -119,12 +119,13 @@ with tab3:
     
     # Código HTML do iframe que você forneceu
     looker_iframe = """
-    <iframe width="600" height="600" src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+    <iframe width="600" height="600" src="<iframe width="600" height="600" src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
     """
     
     # Renderizando o HTML no Streamlit
     components.html(looker_iframe, height=600)
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
 
 
 
