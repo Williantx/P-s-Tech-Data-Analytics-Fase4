@@ -119,7 +119,64 @@ with tab2:
     
     # Renderização via iframe
     components.iframe(url_looker, height=700, scrolling=True)
+
+with tab3:
+
+import plotly.express as px
+import plotly.graph_objects as go
+
+with tab2:
+    st.header("📊 Dashboard Analítico Nativo")
     
+    if os.path.exists(DATA_PATH):
+        df_dash = pd.read_csv(DATA_PATH)
+        
+        # Métricas de Destaque conforme seu relatório [cite: 25, 27, 28]
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Pacientes Analisados", "2.111") [cite: 25]
+        c2.metric("Peso Médio", "86,59 kg") [cite: 27]
+        c3.metric("Idade Média", "24 anos") [cite: 28]
+        
+        st.markdown("---")
+        
+        col_g1, col_g2 = st.columns(2)
+        
+        with col_g1:
+            st.subheader("Distribuição de Obesidade")
+            # Dados baseados no seu levantamento [cite: 8, 11, 14]
+            fig_pizza = px.pie(
+                names=['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
+                values=[16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9],
+                hole=0.4,
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            st.plotly_chart(fig_pizza, use_container_width=True)
+            
+        with col_g2:
+            st.subheader("Histórico Familiar vs Obesidade")
+            # Reconstrução do gráfico de barras empilhadas [cite: 30, 43, 44]
+            # Nota: Este gráfico mostra a forte correlação com histórico positivo [cite: 30]
+            fig_hist = px.bar(
+                x=["Sim", "Não"],
+                y=[1750, 400], # Valores aproximados do seu gráfico de barras [cite: 35, 41]
+                labels={'x': 'Histórico Familiar', 'y': 'Quantidade'},
+                color=["Sim", "Não"]
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
+
+        st.subheader("Meios de Transporte e Sedentarismo")
+        # Dados de MTRANS extraídos do seu PDF [cite: 45, 48, 53, 62]
+        transporte_data = {
+            'Meio': ['Transporte Público', 'Automóvel', 'Caminhada', 'Bicicleta', 'Motocicleta'],
+            'Qtd': [1558, 463, 88, 14, 9] [cite: 48, 53, 62, 63, 64]
+        }
+        fig_transp = px.bar(transporte_data, x='Meio', y='Qtd', color='Meio', text_auto=True)
+        st.plotly_chart(fig_transp, use_container_width=True)
+        
+    else:
+        st.error("Arquivo Obesity.csv não encontrado para gerar o dashboard local.")
+    
+
 
 
 
