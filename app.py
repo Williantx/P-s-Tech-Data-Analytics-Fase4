@@ -107,12 +107,19 @@ with tab1:
                 st.error(f"Erro na predição: {e}")
 
 with tab2:
-    st.header("📊 Dashboard Interativo")
-    # URL formatada para incorporação (embed)
-    url_looker = "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF"
+    st.header("📊 Dashboard Analítico")
     
-    # Inserindo o gráfico do Looker Studio
-    components.iframe(url_looker, height=700, scrolling=True)
+    # Usamos aspas triplas para evitar o erro de sintaxe com as aspas do HTML
+    looker_iframe = """
+    <iframe width="100%" height="700" 
+        src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" 
+        frameborder="0" style="border:0" allowfullscreen 
+        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+    </iframe>
+    """
+    
+    # Usamos st.components.v1.html para renderizar o código acima
+    components.html(looker_iframe, height=720)
 
 with tab3:
 st.header("📊 Dashboard Analítico")
@@ -122,6 +129,7 @@ st.header("📊 Dashboard Analítico")
    
 
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
 
 
 
