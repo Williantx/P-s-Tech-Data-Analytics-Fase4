@@ -143,8 +143,18 @@ with tab2:
 
 with tab3:
     st.header("📝 Relatórios e Insights")
+    
+    # Botão de link direto
+    st.link_button("🚀 Abrir Relatório Completo no Looker Studio", 
+                   "https://lookerstudio.google.com/u/0/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF")
+
+    st.markdown("---")
+    
+    # Mantendo o iframe caso queira que o usuário visualize sem sair da página
+    st.subheader("Visualização Rápida")
     st.components.v1.iframe(
         "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
         height=700,
         scrolling=True
     )
+
