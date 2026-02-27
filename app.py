@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import streamlit.components.v1 as components
+import plotly.express as px
 
 # Configuração da Página
 st.set_page_config(page_title="Predição de Obesidade", layout="wide")
@@ -149,6 +150,7 @@ with tab2:
     }
     fig_transp = px.bar(transporte_data, x='Meio', y='Qtd', color='Meio', text_auto=True)
     st.plotly_chart(fig_transp, use_container_width=True)
+
 
 
 
