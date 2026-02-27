@@ -150,6 +150,29 @@ with tab2:
     }
     fig_transp = px.bar(transporte_data, x='Meio', y='Qtd', color='Meio', text_auto=True)
     st.plotly_chart(fig_transp, use_container_width=True)
+    
+with tab3:
+    st.header("📝 Relatórios e Insights")
+    
+    # Código HTML do iframe com aspas triplas para evitar erros de sintaxe
+    looker_relatorio = """
+    <iframe width="100%" height="600" 
+        src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" 
+        frameborder="0" style="border:0" allowfullscreen 
+        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+    </iframe>
+    """
+    
+    # Renderizando o relatório
+    components.html(looker_relatorio, height=620)
+
+    # Insights baseados no relatório técnico [cite: 30, 45, 48]
+    st.markdown("---")
+    st.subheader("Análise de Fatores Críticos")
+    st.info("""
+    * **Fator Genético:** O histórico familiar apresenta a correlação mais forte com os níveis de obesidade[cite: 30].
+    * **Mobilidade Urbana:** O uso predominante de transporte público (1.558 registros) indica um perfil com baixa atividade física incidental[cite: 48, 61].
+    """)
 
 
 
