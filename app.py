@@ -109,7 +109,7 @@ with tab1:
 with tab2:
     st.header("📊 Dashboard Interativo")
     # URL formatada para incorporação (embed)
-    url_looker = "https://lookerstudio.google.com/s/heu3x0McjF0"
+    url_looker = "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF"
     
     # Inserindo o gráfico do Looker Studio
     components.iframe(url_looker, height=700, scrolling=True)
@@ -127,6 +127,7 @@ with tab3:
     # Renderizando o HTML no Streamlit
     components.html(looker_iframe, height=600)
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
 
 
 
