@@ -4,31 +4,37 @@ import joblib
 import os
 import plotly.express as px
 
-# ==============================
+# =====================================
 # CONFIGURAÇÃO DA PÁGINA
-# ==============================
+# =====================================
 st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 
 MODEL_PATH = 'modelo_obesidade.pkl'
 LE_PATH = 'label_encoder.pkl'
 DATA_PATH = 'Obesity.csv'
 
-# ==============================
+# =====================================
 # CARREGAR MODELO E ENCODER
-# ==============================
+# =====================================
 @st.cache_resource
 def carregar_recursos():
-    if not os.path.exists(MODEL_PATH) or not os.path.exists(LE_PATH):
-        return None, None
+    if not os.path.exists(MODEL_PATH):
+        st.error(f"Arquivo {MODEL_PATH} não encontrado.")
+        st.stop()
+
+    if not os.path.exists(LE_PATH):
+        st.error(f"Arquivo {LE_PATH} não encontrado.")
+        st.stop()
+
     modelo = joblib.load(MODEL_PATH)
     encoder = joblib.load(LE_PATH)
     return modelo, encoder
 
 pipeline, le = carregar_recursos()
 
-# ==============================
+# =====================================
 # TÍTULO
-# ==============================
+# =====================================
 st.title("🏥 Sistema de Apoio ao Diagnóstico de Obesidade")
 st.markdown("---")
 
@@ -43,7 +49,6 @@ with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
-    # Mapas
     mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
     mapa_frequencia = {
@@ -101,74 +106,65 @@ with tab1:
         )
 
     if st.button("Realizar Diagnóstico"):
-        if pipeline and le:
 
-            df_input = pd.DataFrame({
-                'Genero': [mapa_genero[genero_visual]],
-                'Idade': [idade],
-                'Altura': [altura],
-                'Peso': [peso],
-                'Historico_Familiar_Obesidade': [mapa_sim_nao[historia_fam_visual]],
-                'Frequencia_Consumo_Alimento_Calorico': [mapa_sim_nao[favc_visual]],
-                'Frequencia_Consumo_Vegetais': [fcvc],
-                'Numero_Refeicoes_Principais': [ncp],
-                'Consumo_Alimento_Entre_Refeicoes': [mapa_frequencia[caec_visual]],
-                'Fumante': [mapa_sim_nao[smoke_visual]],
-                'Consumo_Agua': [ch2o],
-                'Monitoramento_Calorico': [mapa_sim_nao[scc_visual]],
-                'Frequencia_Atividade_Fisica': [faf],
-                'Tempo_Uso_Tecnologia': [tue],
-                'Consumo_Alcool': [mapa_frequencia[calc_visual]],
-                'Meio_Transporte': [mapa_transporte[mtrans_visual]]
-            })
+        df_input = pd.DataFrame({
+            'Genero': [mapa_genero[genero_visual]],
+            'Idade': [idade],
+            'Altura': [altura],
+            'Peso': [peso],
+            'Historico_Familiar_Obesidade': [mapa_sim_nao[historia_fam_visual]],
+            'Frequencia_Consumo_Alimento_Calorico': [mapa_sim_nao[favc_visual]],
+            'Frequencia_Consumo_Vegetais': [fcvc],
+            'Numero_Refeicoes_Principais': [ncp],
+            'Consumo_Alimento_Entre_Refeicoes': [mapa_frequencia[caec_visual]],
+            'Fumante': [mapa_sim_nao[smoke_visual]],
+            'Consumo_Agua': [ch2o],
+            'Monitoramento_Calorico': [mapa_sim_nao[scc_visual]],
+            'Frequencia_Atividade_Fisica': [faf],
+            'Tempo_Uso_Tecnologia': [tue],
+            'Consumo_Alcool': [mapa_frequencia[calc_visual]],
+            'Meio_Transporte': [mapa_transporte[mtrans_visual]]
+        })
 
-            try:
-                pred_codificada = pipeline.predict(df_input)
-                resultado_final = le.inverse_transform(pred_codificada)[0]
+        try:
+            pred_codificada = pipeline.predict(df_input)
+            resultado_final = le.inverse_transform(pred_codificada)[0]
 
-                # IMC
-                if altura > 0:
-                    imc = peso / (altura ** 2)
-                else:
-                    imc = 0
+            # IMC
+            imc = peso / (altura ** 2)
 
-                # Classificação IMC
-                if imc < 18.5:
-                    class_imc = "Abaixo do Peso"
-                elif imc < 25:
-                    class_imc = "Peso Normal"
-                elif imc < 30:
-                    class_imc = "Sobrepeso"
-                else:
-                    class_imc = "Obesidade"
+            if imc < 18.5:
+                class_imc = "Abaixo do Peso"
+            elif imc < 25:
+                class_imc = "Peso Normal"
+            elif imc < 30:
+                class_imc = "Sobrepeso"
+            else:
+                class_imc = "Obesidade"
 
-                st.success(f"### Resultado: {resultado_final.replace('_', ' ')}")
-                st.info(f"IMC Calculado: {imc:.2f} ({class_imc})")
+            st.success(f"### Resultado: {resultado_final.replace('_', ' ')}")
+            st.info(f"IMC Calculado: {imc:.2f} ({class_imc})")
 
-                # Probabilidades
-                if hasattr(pipeline, "predict_proba"):
-                    proba = pipeline.predict_proba(df_input)[0]
-                    classes = le.classes_
+            if hasattr(pipeline, "predict_proba"):
+                proba = pipeline.predict_proba(df_input)[0]
+                classes = le.classes_
 
-                    df_proba = pd.DataFrame({
-                        "Classificação": classes,
-                        "Probabilidade": proba
-                    })
+                df_proba = pd.DataFrame({
+                    "Classificação": classes,
+                    "Probabilidade": proba
+                })
 
-                    fig_proba = px.bar(
-                        df_proba,
-                        x="Classificação",
-                        y="Probabilidade",
-                        text_auto=True
-                    )
+                fig_proba = px.bar(
+                    df_proba,
+                    x="Classificação",
+                    y="Probabilidade",
+                    text_auto=True
+                )
 
-                    st.plotly_chart(fig_proba, use_container_width=True)
+                st.plotly_chart(fig_proba, use_container_width=True)
 
-            except Exception as e:
-                st.error(f"Erro na predição: {e}")
-
-        else:
-            st.error("Modelo ou Encoder não carregado.")
+        except Exception as e:
+            st.error(f"Erro na predição: {e}")
 
 
 # =========================================================
@@ -177,26 +173,28 @@ with tab1:
 with tab2:
     st.header("📊 Dashboard Analítico")
 
-    try:
-        df = pd.read_csv(DATA_PATH)
+    if not os.path.exists(DATA_PATH):
+        st.error(f"Arquivo {DATA_PATH} não encontrado na pasta do projeto.")
+        st.write("Arquivos disponíveis nesta pasta:")
+        st.write(os.listdir())
+        st.stop()
 
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Pacientes Analisados", len(df))
-        c2.metric("Peso Médio", f"{df['Weight'].mean():.2f} kg")
-        c3.metric("Idade Média", f"{df['Age'].mean():.0f} anos")
+    df = pd.read_csv(DATA_PATH)
 
-        st.markdown("---")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Pacientes Analisados", len(df))
+    c2.metric("Peso Médio", f"{df['Weight'].mean():.2f} kg")
+    c3.metric("Idade Média", f"{df['Age'].mean():.0f} anos")
 
-        # Distribuição da variável alvo
-        fig_dist = px.pie(
-            df,
-            names='NObeyesdad',
-            hole=0.4
-        )
-        st.plotly_chart(fig_dist, use_container_width=True)
+    st.markdown("---")
 
-    except:
-        st.warning("Arquivo CSV não encontrado para dashboard dinâmico.")
+    fig_dist = px.pie(
+        df,
+        names='NObeyesdad',
+        hole=0.4
+    )
+
+    st.plotly_chart(fig_dist, use_container_width=True)
 
 
 # =========================================================
