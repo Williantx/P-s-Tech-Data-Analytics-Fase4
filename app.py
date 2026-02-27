@@ -4,6 +4,7 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import streamlit.components.v1 as components
 
 # Configuração da Página
 st.set_page_config(page_title="Predição de Obesidade", layout="wide")
@@ -124,3 +125,4 @@ with tab3:
     # Renderizando o HTML no Streamlit
     components.html(looker_iframe, height=600)
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
