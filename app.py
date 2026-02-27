@@ -14,6 +14,24 @@ with tab1:
         'Carro': 'Automobile', 'Moto': 'Motorbike', 'Bicicleta': 'Bike'
     }
 
+    with col_g1:
+    st.subheader("Distribuição de Obesidade")
+    
+    # Criando um DataFrame temporário para o gráfico
+    df_pizza = pd.DataFrame({
+        "Categoria": ['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
+        "Percentual": [16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9]
+    })
+    
+    fig_pizza = px.pie(
+        df_pizza, # Passando o DataFrame como primeiro argumento
+        names='Categoria',
+        values='Percentual',
+        hole=0.4,
+        color_discrete_sequence=px.colors.qualitative.Pastel
+    )
+    st.plotly_chart(fig_pizza, use_container_width=True)
+    
     # ... (mantenha os inputs das colunas col1, col2, col3 iguais)
 
     if st.button("Realizar Diagnóstico"):
@@ -62,3 +80,4 @@ with tab3:
         height=700,
         scrolling=True
     )
+
