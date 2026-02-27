@@ -1,54 +1,63 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-import streamlit.components.v1 as components
 import plotly.express as px
 
-# Configuração da Página
+# ==============================
+# CONFIGURAÇÃO DA PÁGINA
+# ==============================
 st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 
-# Caminhos locais
 MODEL_PATH = 'modelo_obesidade.pkl'
 LE_PATH = 'label_encoder.pkl'
 DATA_PATH = 'Obesity.csv'
 
-# Carregar o modelo e o encoder
+# ==============================
+# CARREGAR MODELO E ENCODER
+# ==============================
 @st.cache_resource
 def carregar_recursos():
     if not os.path.exists(MODEL_PATH) or not os.path.exists(LE_PATH):
-        st.error("Erro: Arquivos 'modelo_obesidade.pkl' ou 'label_encoder.pkl' não encontrados.")
         return None, None
-    try:
-        modelo = joblib.load(MODEL_PATH)
-        encoder = joblib.load(LE_PATH)
-        return modelo, encoder
-    except Exception as e:
-        st.error(f"Erro ao carregar arquivos: {e}")
-        return None, None
+    modelo = joblib.load(MODEL_PATH)
+    encoder = joblib.load(LE_PATH)
+    return modelo, encoder
 
 pipeline, le = carregar_recursos()
 
-# Título
+# ==============================
+# TÍTULO
+# ==============================
 st.title("🏥 Sistema de Apoio ao Diagnóstico de Obesidade")
 st.markdown("---")
 
-# Abas
-tab1, tab2, tab3 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"])
+tab1, tab2, tab3 = st.tabs(
+    ["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"]
+)
 
+# =========================================================
+# 🔮 TAB 1 - PREDIÇÃO
+# =========================================================
 with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
-    # Dicionários de Tradução (Visual -> Modelo)
-    mapa_genero = {'Masculino': 'Female', 'Feminino': 'Male'} # Ajustado conforme seu notebook
+    # Mapas
+    mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
-    mapa_frequencia = {'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 'Sempre': 'Always', 'Não': 'no'}
+    mapa_frequencia = {
+        'Às vezes': 'Sometimes',
+        'Frequentemente': 'Frequently',
+        'Sempre': 'Always',
+        'Não': 'no'
+    }
     mapa_transporte = {
-        'Transporte Público': 'Public_Transportation', 'Caminhada': 'Walking', 
-        'Carro': 'Automobile', 'Moto': 'Motorbike', 'Bicicleta': 'Bike'
+        'Transporte Público': 'Public_Transportation',
+        'Caminhada': 'Walking',
+        'Carro': 'Automobile',
+        'Moto': 'Motorbike',
+        'Bicicleta': 'Bike'
     }
 
     with col1:
@@ -56,26 +65,44 @@ with tab1:
         idade = st.number_input("Idade", 1, 120, 25)
         altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
         peso = st.number_input("Peso (kg)", 10.0, 300.0, 70.0)
-        historia_fam_visual = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
+        historia_fam_visual = st.selectbox(
+            "Histórico Familiar de Sobrepeso?",
+            list(mapa_sim_nao.keys())
+        )
 
     with col2:
-        favc_visual = st.selectbox("Consome comida calórica frequentemente?", list(mapa_sim_nao.keys()))
+        favc_visual = st.selectbox(
+            "Consome comida calórica frequentemente?",
+            list(mapa_sim_nao.keys())
+        )
         fcvc = st.slider("Frequência de consumo de vegetais (1-3)", 1, 3, 2)
         ncp = st.slider("Número de refeições principais", 1, 4, 3)
-        caec_visual = st.selectbox("Come entre refeições?", list(mapa_frequencia.keys()))
+        caec_visual = st.selectbox(
+            "Come entre refeições?",
+            list(mapa_frequencia.keys())
+        )
         smoke_visual = st.selectbox("Fumante?", list(mapa_sim_nao.keys()))
 
     with col3:
         ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
-        scc_visual = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
+        scc_visual = st.selectbox(
+            "Monitora calorias ingeridas?",
+            list(mapa_sim_nao.keys())
+        )
         faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
         tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
-        calc_visual = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
-        mtrans_visual = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
+        calc_visual = st.selectbox(
+            "Consumo de álcool",
+            list(mapa_frequencia.keys())
+        )
+        mtrans_visual = st.selectbox(
+            "Meio de transporte principal",
+            list(mapa_transporte.keys())
+        )
 
     if st.button("Realizar Diagnóstico"):
         if pipeline and le:
-            # DataFrame com os nomes EXATOS das colunas do treinamento no notebook
+
             df_input = pd.DataFrame({
                 'Genero': [mapa_genero[genero_visual]],
                 'Idade': [idade],
@@ -96,89 +123,89 @@ with tab1:
             })
 
             try:
-                # 1. Predição numérica (XGBoost gera 0, 1, 2...)
                 pred_codificada = pipeline.predict(df_input)
-                # 2. Tradução para texto usando o LabelEncoder
                 resultado_final = le.inverse_transform(pred_codificada)[0]
-                
-                imc = peso / (altura ** 2)
+
+                # IMC
+                if altura > 0:
+                    imc = peso / (altura ** 2)
+                else:
+                    imc = 0
+
+                # Classificação IMC
+                if imc < 18.5:
+                    class_imc = "Abaixo do Peso"
+                elif imc < 25:
+                    class_imc = "Peso Normal"
+                elif imc < 30:
+                    class_imc = "Sobrepeso"
+                else:
+                    class_imc = "Obesidade"
+
                 st.success(f"### Resultado: {resultado_final.replace('_', ' ')}")
-                st.info(f"**IMC Calculado:** {imc:.2f}")
+                st.info(f"IMC Calculado: {imc:.2f} ({class_imc})")
+
+                # Probabilidades
+                if hasattr(pipeline, "predict_proba"):
+                    proba = pipeline.predict_proba(df_input)[0]
+                    classes = le.classes_
+
+                    df_proba = pd.DataFrame({
+                        "Classificação": classes,
+                        "Probabilidade": proba
+                    })
+
+                    fig_proba = px.bar(
+                        df_proba,
+                        x="Classificação",
+                        y="Probabilidade",
+                        text_auto=True
+                    )
+
+                    st.plotly_chart(fig_proba, use_container_width=True)
+
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
+        else:
+            st.error("Modelo ou Encoder não carregado.")
 
 
+# =========================================================
+# 📊 TAB 2 - DASHBOARD
+# =========================================================
 with tab2:
     st.header("📊 Dashboard Analítico")
-    
-# Métricas baseadas no relatório técnico
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Pacientes Analisados", "2.111")
-    c2.metric("Peso Médio", "86,59 kg")
-    c3.metric("Idade Média", "24 anos")
-    
-    st.markdown("---")
-    
-    col_g1, col_g2 = st.columns(2)
-    
-    with col_g1:
-        st.subheader("Distribuição de Obesidade")
-        fig_pizza = px.pie(
-            names=['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
-            values=[16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9],
-            hole=0.4,
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(fig_pizza, use_container_width=True)
-        
-    with col_g2:
-        st.subheader("Histórico Familiar vs Obesidade")
-        fig_hist = px.bar(
-            x=["Sim", "Não"],
-            y=[1750, 400],
-            labels={'x': 'Histórico Familiar', 'y': 'Quantidade'},
-            color=["Sim", "Não"],
-            color_discrete_map={"Sim": "#ef553b", "Não": "#636efa"}
-        )
-        st.plotly_chart(fig_hist, use_container_width=True)
 
-    st.subheader("Meios de Transporte e Sedentarismo")
-    transporte_data = {
-        'Meio': ['Transporte Público', 'Automóvel', 'Caminhada', 'Bicicleta', 'Motocicleta'],
-        'Qtd': [1558, 463, 88, 14, 9]
-    }
-    fig_transp = px.bar(transporte_data, x='Meio', y='Qtd', color='Meio', text_auto=True)
-    st.plotly_chart(fig_transp, use_container_width=True)
-    
+    try:
+        df = pd.read_csv(DATA_PATH)
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Pacientes Analisados", len(df))
+        c2.metric("Peso Médio", f"{df['Weight'].mean():.2f} kg")
+        c3.metric("Idade Média", f"{df['Age'].mean():.0f} anos")
+
+        st.markdown("---")
+
+        # Distribuição da variável alvo
+        fig_dist = px.pie(
+            df,
+            names='NObeyesdad',
+            hole=0.4
+        )
+        st.plotly_chart(fig_dist, use_container_width=True)
+
+    except:
+        st.warning("Arquivo CSV não encontrado para dashboard dinâmico.")
+
+
+# =========================================================
+# 📝 TAB 3 - RELATÓRIO
+# =========================================================
 with tab3:
-    
-with st.container():
     st.header("📝 Relatórios e Insights")
 
     st.components.v1.iframe(
         "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
         height=700
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
