@@ -115,18 +115,18 @@ with tab2:
     components.iframe(url_looker, height=700, scrolling=True)
 
 with tab3:
-    st.header("📊 Dashboard Analítico")
+st.header("📊 Dashboard Analítico")
     
-    # Código HTML do iframe que você forneceu
-    # URL de incorporação oficial
     url_looker = "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF"
     
-    # Renderização via iframe
-    components.iframe(url_looker, height=700, scrolling=True)
+    # Botão para abrir em nova aba caso o iframe falhe
+    st.link_button("Abrir Dashboard em nova aba (Caso não carregue abaixo)", url_looker.replace("/embed", ""))
     
-    # Renderizando o HTML no Streamlit
-    components.html(looker_iframe, height=600)
+    # Tentativa de carregar o iframe
+    components.iframe(url_looker, height=700, scrolling=True)
+
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
 
 
 
