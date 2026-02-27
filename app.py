@@ -117,13 +117,12 @@ with tab2:
 with tab3:
 st.header("📊 Dashboard Analítico")
     
-    url_looker = "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF"
+    url_looker = "<iframe width="600" height="700" src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>"
     
    
-    # Tentativa de carregar o iframe
-    components.iframe(url_looker, height=700, scrolling=True)
 
     st.info("💡 **Dica Clínica:** O histórico familiar e a frequência de consumo de alimentos calóricos foram os fatores de maior peso no modelo XGBoost.")
+
 
 
 
