@@ -94,15 +94,35 @@ with tab1:
                 'Meio_Transporte': [mapa_transporte[mtrans_visual]]
             })
 
-            try:
+        try:
+                # 1. Predição e Tradução
                 pred_codificada = pipeline.predict(df_input)
-                resultado_final = le.inverse_transform(pred_codificada)[0]
-                
-                imc = peso / (altura * altura)
-                st.success(f"### Resultado: {resultado_final.replace('_', ' ')}")
+                resultado_raw = le.inverse_transform(pred_codificada)[0]
+
+                # 2. Função de Normalização (Lógica solicitada)
+                def normalize(level):
+                    if level == 'Insufficient_Weight':
+                        return "Abaixo do peso"
+                    elif level == 'Normal_Weight':
+                        return "Peso normal"
+                    elif level in ['Overweight_Level_I', 'Overweight_Level_II']:
+                        return "Sobrepeso"
+                    else:
+                        return "Obeso"
+
+                # 3. Aplicação da Normalização e Cálculo
+                resultado_final = normalize(resultado_raw)
+                imc = peso / (altura ** 2)
+
+                # 4. Exibição dos Resultados
+                st.success(f"### Resultado: {resultado_final}")
+                st.info(f"**Classificação Original do Modelo:** {resultado_raw.replace('_', ' ')}")
                 st.info(f"**IMC Calculado:** {imc:.2f}")
+
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
+
+
 
 with tab2:
     st.header("📊 Dashboard Analítico")
@@ -157,5 +177,6 @@ with tab3:
         height=700,
         scrolling=True
     )
+
 
 
