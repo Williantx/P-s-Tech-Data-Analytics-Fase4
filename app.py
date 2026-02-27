@@ -106,24 +106,7 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
-import streamlit as st
-import streamlit.components.v1 as components
 
-# ... (restante do seu código)
-
-with tab2:
-    st.header("📊 Dashboard Analítico")
-    
-    # URL de incorporação oficial
-    url_looker = "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF"
-    
-    # Renderização via iframe
-    components.iframe(url_looker, height=700, scrolling=True)
-
-with tab3:
-
-import plotly.express as px
-import plotly.graph_objects as go
 
 with tab2:
     st.header("📊 Dashboard Analítico")
@@ -166,6 +149,7 @@ with tab2:
     }
     fig_transp = px.bar(transporte_data, x='Meio', y='Qtd', color='Meio', text_auto=True)
     st.plotly_chart(fig_transp, use_container_width=True)
+
 
 
 
