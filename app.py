@@ -152,12 +152,15 @@ with tab2:
     st.plotly_chart(fig_transp, use_container_width=True)
     
 with tab3:
-st.header("📝 Relatórios e Insights")
+    
+with st.container():
+    st.header("📝 Relatórios e Insights")
 
-st.components.v1.iframe(
-    "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
-    height=700
-)
+    st.components.v1.iframe(
+        "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
+        height=700
+    )
+
 
 
 
