@@ -98,7 +98,7 @@ with tab1:
                 pred_codificada = pipeline.predict(df_input)
                 resultado_final = le.inverse_transform(pred_codificada)[0]
                 
-                imc = peso / (altura ** 2)
+                imc = peso / (altura * altura)
                 st.success(f"### Resultado: {resultado_final.replace('_', ' ')}")
                 st.info(f"**IMC Calculado:** {imc:.2f}")
             except Exception as e:
@@ -157,4 +157,5 @@ with tab3:
         height=700,
         scrolling=True
     )
+
 
