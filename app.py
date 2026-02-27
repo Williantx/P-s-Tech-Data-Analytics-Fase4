@@ -73,7 +73,7 @@ with tab1:
         calc_visual = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
         mtrans_visual = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
 
-    if st.button("Realizar Diagnóstico"):
+if st.button("Realizar Diagnóstico"):
         if pipeline and le:
             df_input = pd.DataFrame({
                 'Genero': [mapa_genero[genero_visual]],
@@ -94,12 +94,12 @@ with tab1:
                 'Meio_Transporte': [mapa_transporte[mtrans_visual]]
             })
 
-        try:
-                # 1. Predição e Tradução
+            try:
+                # Predição
                 pred_codificada = pipeline.predict(df_input)
                 resultado_raw = le.inverse_transform(pred_codificada)[0]
 
-                # 2. Função de Normalização (Lógica solicitada)
+                # Lógica de Normalização Integrada
                 def normalize(level):
                     if level == 'Insufficient_Weight':
                         return "Abaixo do peso"
@@ -110,13 +110,12 @@ with tab1:
                     else:
                         return "Obeso"
 
-                # 3. Aplicação da Normalização e Cálculo
                 resultado_final = normalize(resultado_raw)
                 imc = peso / (altura ** 2)
 
-                # 4. Exibição dos Resultados
+                # Exibição
                 st.success(f"### Resultado: {resultado_final}")
-                st.info(f"**Classificação Original do Modelo:** {resultado_raw.replace('_', ' ')}")
+                st.info(f"**Classificação Detalhada:** {resultado_raw.replace('_', ' ')}")
                 st.info(f"**IMC Calculado:** {imc:.2f}")
 
             except Exception as e:
@@ -177,6 +176,7 @@ with tab3:
         height=700,
         scrolling=True
     )
+
 
 
 
