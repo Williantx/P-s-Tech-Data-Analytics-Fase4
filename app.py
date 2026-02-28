@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-import streamlit.components.v1 as components
 import plotly.express as px
 
 # Configuração da Página
@@ -12,18 +9,27 @@ st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 
 # Caminhos locais
 MODEL_PATH = 'modelo_obesidade.pkl'
-DATA_PATH = 'Obesity.csv'
 
-# Carregar o modelo e o encoder
+# --- FUNÇÃO DE CARREGAMENTO CORRIGIDA ---
 @st.cache_resource
-def carregar_modelo():
+def carregar_recursos():
     if not os.path.exists(MODEL_PATH):
-        st.error(f"Erro: Arquivo '{MODEL_PATH}' não encontrado na pasta local.")
-        return None
-    return joblib.load(MODEL_PATH)
+        st.error(f"Erro: Arquivo '{MODEL_PATH}' não encontrado.")
+        return None, None
+    
+    try:
+        recursos = joblib.load(MODEL_PATH)
+        # Verifica se o arquivo contém o par (pipeline, encoder)
+        if isinstance(recursos, (tuple, list)) and len(recursos) == 2:
+            return recursos[0], recursos[1]
+        else:
+            st.warning("O arquivo .pkl não contém (modelo, encoder). Retornando apenas o modelo.")
+            return recursos, None
+    except Exception as e:
+        st.error(f"Erro ao carregar o modelo: {e}")
+        return None, None
 
-pipeline = carregar_modelo()
-
+# Chamada única para carregar os objetos
 pipeline, le = carregar_recursos()
 
 # Título
@@ -37,7 +43,6 @@ with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
-    # Dicionários de Tradução (Ajustado: Masculino -> Male, Feminino -> Female)
     mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'} 
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
     mapa_frequencia = {'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 'Sempre': 'Always', 'Não': 'no'}
@@ -68,66 +73,63 @@ with tab1:
         calc_visual = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
         mtrans_visual = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
 
-if st.button("Realizar Diagnóstico"):
-        if pipeline and le:
+    if st.button("Realizar Diagnóstico"):
+        if pipeline is not None and le is not None:
             df_input = pd.DataFrame({
-                'Genero': [mapa_genero[genero_visual]],
-                'Idade': [idade],
-                'Altura': [altura],
-                'Peso': [peso],
-                'Historico_Familiar_Obesidade': [mapa_sim_nao[historia_fam_visual]],
-                'Frequencia_Consumo_Alimento_Calorico': [mapa_sim_nao[favc_visual]],
-                'Frequencia_Consumo_Vegetais': [fcvc],
-                'Numero_Refeicoes_Principais': [ncp],
-                'Consumo_Alimento_Entre_Refeicoes': [mapa_frequencia[caec_visual]],
-                'Fumante': [mapa_sim_nao[smoke_visual]],
-                'Consumo_Agua': [ch2o],
-                'Monitoramento_Calorico': [mapa_sim_nao[scc_visual]],
-                'Frequencia_Atividade_Fisica': [faf],
-                'Tempo_Uso_Tecnologia': [tue],
-                'Consumo_Alcool': [mapa_frequencia[calc_visual]],
-                'Meio_Transporte': [mapa_transporte[mtrans_visual]]
+                'Gender': [mapa_genero[genero_visual]],
+                'Age': [idade],
+                'Height': [altura],
+                'Weight': [peso],
+                'family_history_with_overweight': [mapa_sim_nao[historia_fam_visual]],
+                'FAVC': [mapa_sim_nao[favc_visual]],
+                'FCVC': [fcvc],
+                'NCP': [ncp],
+                'CAEC': [mapa_frequencia[caec_visual]],
+                'SMOKE': [mapa_sim_nao[smoke_visual]],
+                'CH2O': [ch2o],
+                'SCC': [mapa_sim_nao[scc_visual]],
+                'FAF': [faf],
+                'TUE': [tue],
+                'CALC': [mapa_frequencia[calc_visual]],
+                'MTRANS': [mapa_transporte[mtrans_visual]]
             })
 
             try:
-                # Predição
                 pred_codificada = pipeline.predict(df_input)
                 resultado_raw = le.inverse_transform(pred_codificada)[0]
 
-                # Lógica de Normalização Integrada
                 def normalize(level):
-                    if level == 'Insufficient_Weight':
-                        return "Abaixo do peso"
-                    elif level == 'Normal_Weight':
-                        return "Peso normal"
-                    elif level in ['Overweight_Level_I', 'Overweight_Level_II']:
-                        return "Sobrepeso"
-                    else:
-                        return "Obeso"
+                    traducoes = {
+                        'Insufficient_Weight': "Abaixo do peso",
+                        'Normal_Weight': "Peso normal",
+                        'Overweight_Level_I': "Sobrepeso",
+                        'Overweight_Level_II': "Sobrepeso",
+                        'Obesity_Type_I': "Obeso Grau I",
+                        'Obesity_Type_II': "Obeso Grau II",
+                        'Obesity_Type_III': "Obeso Grau III"
+                    }
+                    return traducoes.get(level, "Obeso")
 
                 resultado_final = normalize(resultado_raw)
                 imc = peso / (altura ** 2)
 
-                # Exibição
                 st.success(f"### Resultado: {resultado_final}")
                 st.info(f"**Classificação Detalhada:** {resultado_raw.replace('_', ' ')}")
                 st.info(f"**IMC Calculado:** {imc:.2f}")
 
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
-
-
+        else:
+            st.error("O modelo ou o encoder não foram carregados corretamente.")
 
 with tab2:
     st.header("📊 Dashboard Analítico")
-    
     c1, c2, c3 = st.columns(3)
     c1.metric("Pacientes Analisados", "2.111")
     c2.metric("Peso Médio", "86,59 kg")
     c3.metric("Idade Média", "24 anos")
     
     st.markdown("---")
-    
     col_g1, col_g2 = st.columns(2)
     
     with col_g1:
@@ -136,43 +138,22 @@ with tab2:
             "Categoria": ['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
             "Valores": [16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9]
         })
-        fig_pizza = px.pie(df_dist, names='Categoria', values='Valores', hole=0.4,
-                          color_discrete_sequence=px.colors.qualitative.Pastel)
+        fig_pizza = px.pie(df_dist, names='Categoria', values='Valores', hole=0.4)
         st.plotly_chart(fig_pizza, use_container_width=True)
         
     with col_g2:
         st.subheader("Histórico Familiar vs Obesidade")
         df_hist = pd.DataFrame({"Histórico": ["Sim", "Não"], "Quantidade": [1750, 400]})
-        fig_hist = px.bar(df_hist, x="Histórico", y="Quantidade", color="Histórico",
-                         color_discrete_map={"Sim": "#ef553b", "Não": "#636efa"})
+        fig_hist = px.bar(df_hist, x="Histórico", y="Quantidade", color="Histórico")
         st.plotly_chart(fig_hist, use_container_width=True)
-
-    st.subheader("Meios de Transporte e Sedentarismo")
-    df_transp = pd.DataFrame({
-        'Meio': ['Transporte Público', 'Automóvel', 'Caminhada', 'Bicicleta', 'Motocicleta'],
-        'Qtd': [1558, 463, 88, 14, 9]
-    })
-    fig_transp = px.bar(df_transp, x='Meio', y='Qtd', color='Meio', text_auto=True)
-    st.plotly_chart(fig_transp, use_container_width=True)
 
 with tab3:
     st.header("📝 Relatórios e Insights")
-    
-    # Botão de link direto
     st.link_button("🚀 Abrir Relatório Completo no Looker Studio", 
                    "https://lookerstudio.google.com/u/0/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF")
-
     st.markdown("---")
-    
-    # Mantendo o iframe caso queira que o usuário visualize sem sair da página
     st.subheader("Visualização Rápida")
     st.components.v1.iframe(
         "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
-        height=700,
-        scrolling=True
+        height=700, scrolling=True
     )
-
-
-
-
-
