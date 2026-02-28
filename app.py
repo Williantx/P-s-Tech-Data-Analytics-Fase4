@@ -11,7 +11,7 @@ st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 MODEL_PATH = 'modelo_obesidade.pkl'
 ENCODER_PATH = 'label_encoder.pkl'
 
-# 2. Função de Carregamento de Recursos
+# 2. Função de Carregamento
 @st.cache_resource
 def carregar_recursos():
     if not os.path.exists(MODEL_PATH):
@@ -19,11 +19,9 @@ def carregar_recursos():
         return None, None
     try:
         dados = joblib.load(MODEL_PATH)
-        # Se o .pkl contiver [modelo, encoder]
         if isinstance(dados, (list, tuple)) and len(dados) == 2:
             return dados[0], dados[1]
         
-        # Se contiver apenas o modelo, tenta carregar encoder separado
         pipeline = dados
         le = joblib.load(ENCODER_PATH) if os.path.exists(ENCODER_PATH) else None
         return pipeline, le
@@ -31,7 +29,6 @@ def carregar_recursos():
         st.error(f"Erro ao carregar recursos: {e}")
         return None, None
 
-# Chamada da função corrigida
 pipeline, le = carregar_recursos()
 
 # 3. Interface Principal
@@ -52,17 +49,12 @@ with tab1:
         mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
         mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
         mapa_frequencia = {
-            'Às vezes': 'Sometimes', 
-            'Frequentemente': 'Frequently', 
-            'Sempre': 'Always', 
-            'Não': 'no'
+            'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 
+            'Sempre': 'Always', 'Não': 'no'
         }
         mapa_transporte = {
-            'Transporte Público': 'Public_Transportation', 
-            'Caminhada': 'Walking', 
-            'Carro': 'Automobile', 
-            'Moto': 'Motorbike', 
-            'Bicicleta': 'Bike'
+            'Transporte Público': 'Public_Transportation', 'Caminhada': 'Walking', 
+            'Carro': 'Automobile', 'Moto': 'Motorbike', 'Bicicleta': 'Bike'
         }
 
         with col1:
@@ -70,52 +62,4 @@ with tab1:
             idade = st.number_input("Idade", 1, 120, 25)
             altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
             peso = st.number_input("Peso (kg)", 10.0, 300.0, 70.0)
-            hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
-
-        with col2:
-            favc = st.selectbox("Consome comida calórica frequentemente?", list(mapa_sim_nao.keys()))
-            fcvc = st.slider("Frequência de consumo de vegetais (1-3)", 1, 3, 2)
-            ncp = st.slider("Número de refeições principais", 1, 4, 3)
-            caec = st.selectbox("Come entre refeições?", list(mapa_frequencia.keys()))
-            smoke = st.selectbox("Fumante?", list(mapa_sim_nao.keys()))
-
-        with col3:
-            ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
-            scc = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
-            faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
-            tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
-            calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
-            mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
-
-        if st.button("Realizar Diagnóstico"):
-            try:
-                # DataFrame com os nomes exatos exigidos pelo seu modelo
-                df_input = pd.DataFrame({
-                    'genero': [mapa_genero[genero]],
-                    'idade': [idade],
-                    'altura_m': [altura],
-                    'peso_kg': [peso],
-                    'historia_familiar_sobrepeso': [mapa_sim_nao[hist_fam]],
-                    'come_comida_calorica_freq': [mapa_sim_nao[favc]],
-                    'freq_consumo_vegetais': [fcvc],
-                    'num_refeicoes_principais': [ncp],
-                    'come_entre_refeicoes': [mapa_frequencia[caec]],
-                    'fumante': [mapa_sim_nao[smoke]],
-                    'consumo_agua_litros': [ch2o],
-                    'monitora_calorias': [mapa_sim_nao[scc]],
-                    'freq_atividade_fisica': [faf],
-                    'tempo_uso_dispositivos': [tue],
-                    'freq_consumo_alcool': [mapa_frequencia[calc]],
-                    'meio_transporte': [mapa_transporte[mtrans]]
-                })
-
-                # Predição
-                pred = pipeline.predict(df_input)
-                
-                # Descodificação do resultado
-                if le:
-                    resultado = le.inverse_transform(pred)[0]
-                else:
-                    resultado = pred[0]
-
-                st.success(f"### Diagnóstico Sugerido: {resultado}")
+            hist_fam = st.
