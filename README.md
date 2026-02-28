@@ -1,1 +1,32 @@
-# P-s-Tech-Data-Analytics-Fase4
+Tech-Data-Analytics-Fase4
+🏥 Sistema de Diagnóstico de Obesidade - Hospital Vita Nova
+Este projeto é uma aplicação web interativa desenvolvida com Streamlit para auxiliar no diagnóstico clínico de níveis de obesidade. O sistema combina predições de Machine Learning em tempo real com análises visuais de dados.
+
+🚀 Funcionalidades
+O sistema está dividido em três módulos principais:
+
+🔮 Predição Clínica: Interface para entrada de dados do paciente (hábitos alimentares, físico e histórico). O modelo processa os dados e retorna o diagnóstico e o IMC calculado.
+
+📊 Dashboard Analítico: Visualização de indicadores-chave da clínica (KPIs) e gráficos de distribuição de perfis de pacientes utilizando Plotly.
+
+📝 Relatórios e Insights: Integração com Looker Studio via iframe para consultas detalhadas e relatórios dinâmicos externos.
+
+🛠️ Tecnologias Utilizadas
+Linguagem: Python 3.x
+
+Interface Web: Streamlit
+
+Machine Learning: Scikit-Learn (Pipeline e Label Encoding)
+
+Processamento de Dados: Pandas & Joblib
+
+Visualização: Plotly Express & Looker Studio
+
+📂 Estrutura de Arquivos
+app.py: Código principal da aplicação.
+
+modelo_obesidade.pkl: Pipeline do modelo de classificação treinado.
+
+label_encoder.pkl: Codificador para tratamento das variáveis categóricas.
+
+Obesity.csv: Base de dados utilizada para os insights.
