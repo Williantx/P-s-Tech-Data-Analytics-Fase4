@@ -155,6 +155,7 @@ with tab2:
         st.plotly_chart(fig_t, use_container_width=True)
 
 # --- TAB 3: RELATÓRIO LOOKER STUDIO ---
+  with tab3:
     st.header("📝 Relatórios e Insights")
     
     # Botão de link direto
@@ -171,7 +172,9 @@ with tab2:
         scrolling=True
     )
 
+
     
     st.info("💡 Insight: O histórico familiar e o sedentarismo no transporte são os principais fatores identificados na amostra de 2.111 pacientes.")
+
 
 
