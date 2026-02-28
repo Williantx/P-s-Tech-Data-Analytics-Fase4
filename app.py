@@ -72,33 +72,37 @@ with tab1:
         calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
         mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
 
-    if st.button("Realizar Diagnóstico"):
+if st.button("Realizar Diagnóstico"):
         if pipeline and le:
+            # Cálculo do IMC antes de criar o DataFrame, pois o modelo exige como entrada 
+            imc_calculado = peso / (altura ** 2)
+            
+            # DataFrame com os nomes de colunas EXATOS exigidos pelo erro 
             df_input = pd.DataFrame({
-                'Genero': [mapa_genero[genero_v]],
-                'Idade': [idade],
-                'Altura': [altura],
-                'Peso': [peso],
-                'Historico_Familiar_Obesidade': [mapa_sim_nao[hist_fam]],
-                'Frequencia_Consumo_Alimento_Calorico': [mapa_sim_nao[favc]],
-                'Frequencia_Consumo_Vegetais': [fcvc],
-                'Numero_Refeicoes_Principais': [ncp],
-                'Consumo_Alimento_Entre_Refeicoes': [mapa_frequencia[caec]],
-                'Fumante': [mapa_sim_nao[smoke]],
-                'Consumo_Agua': [ch2o],
-                'Monitoramento_Calorico': [mapa_sim_nao[scc]],
-                'Frequencia_Atividade_Fisica': [faf],
-                'Tempo_Uso_Tecnologia': [tue],
-                'Consumo_Alcool': [mapa_frequencia[calc]],
-                'Meio_Transporte': [mapa_transporte[mtrans]]
+                'genero': [mapa_genero[genero_v]],
+                'idade': [idade],
+                'altura_m': [altura],
+                'peso_kg': [peso],
+                'historia_familiar_sobrepeso': [mapa_sim_nao[hist_fam]],
+                'come_comida_calorica_freq': [mapa_sim_nao[favc]],
+                'freq_consumo_vegetais': [fcvc],
+                'num_refeicoes_principais': [ncp],
+                'come_entre_refeicoes': [mapa_frequencia[caec]],
+                'fumante': [mapa_sim_nao[smoke]],
+                'consumo_agua_litros': [ch2o],
+                'monitora_calorias': [mapa_sim_nao[scc]],
+                'freq_atividade_fisica': [faf],
+                'tempo_uso_dispositivos': [tue],
+                'freq_consumo_alcool': [mapa_frequencia[calc]],
+                'meio_transporte': [mapa_transporte[mtrans]],
+                'imc': [imc_calculado] # Coluna obrigatória conforme o erro 
             })
 
             try:
                 pred = pipeline.predict(df_input)
                 resultado = le.inverse_transform(pred)[0]
-                imc = peso / (altura ** 2)
                 st.success(f"### Resultado: {resultado.replace('_', ' ')}")
-                st.info(f"**IMC Calculado:** {imc:.2f}")
+                st.info(f"**IMC Calculado:** {imc_calculado:.2f}")
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
@@ -141,3 +145,4 @@ with tab3:
     </iframe>
     """
     components.html(looker_html, height=620)
+
