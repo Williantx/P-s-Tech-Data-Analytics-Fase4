@@ -37,11 +37,12 @@ st.markdown("---")
 # Definição das Abas - CORRIGIDO
 tab1, tab2, tab3 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"])
 
-# --- TAB 1: FORMULÁRIO E PREDIÇÃO ---
+# --- TAB 1: PREDIÇÃO CLÍNICA ---
 with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
+    # Dicionários de Tradução para o Modelo
     mapa_genero = {'Masculino': 'Female', 'Feminino': 'Male'} 
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
     mapa_frequencia = {'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 'Sempre': 'Always', 'Não': 'no'}
@@ -52,9 +53,9 @@ with tab1:
 
     with col1:
         genero_v = st.selectbox("Gênero", list(mapa_genero.keys()))
-        idade = st.number_input("Idade", 1, 120, 24)
+        idade = st.number_input("Idade", 1, 120, 24) [cite: 27]
         altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
-        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59)
+        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59) [cite: 26]
         hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
 
     with col2:
@@ -67,17 +68,17 @@ with tab1:
     with col3:
         ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
         scc = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
-        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
+        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1) [cite: 17]
         tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
         calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
-        mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
+        mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys())) [cite: 44]
 
-if st.button("Realizar Diagnóstico"):
+    if st.button("Realizar Diagnóstico"):
         if pipeline and le:
-            # Cálculo do IMC antes de criar o DataFrame, pois o modelo exige como entrada 
-            imc_calculado = peso / (altura ** 2)
+            # O IMC deve ser calculado antes pois é uma coluna de entrada do modelo
+            imc_input = peso / (altura ** 2)
             
-            # DataFrame com os nomes de colunas EXATOS exigidos pelo erro 
+            # DataFrame com os nomes exatos exigidos pelo erro anterior
             df_input = pd.DataFrame({
                 'genero': [mapa_genero[genero_v]],
                 'idade': [idade],
@@ -95,14 +96,32 @@ if st.button("Realizar Diagnóstico"):
                 'tempo_uso_dispositivos': [tue],
                 'freq_consumo_alcool': [mapa_frequencia[calc]],
                 'meio_transporte': [mapa_transporte[mtrans]],
-                'imc': [imc_calculado] # Coluna obrigatória conforme o erro 
+                'imc': [imc_input]
             })
 
             try:
-                pred = pipeline.predict(df_input)
-                resultado = le.inverse_transform(pred)[0]
-                st.success(f"### Resultado: {resultado.replace('_', ' ')}")
-                st.info(f"**IMC Calculado:** {imc_calculado:.2f}")
+                # Predição
+                pred_codificada = pipeline.predict(df_input)
+                resultado_raw = le.inverse_transform(pred_codificada)[0]
+
+                # Sua Lógica de Normalização
+                def normalize(level):
+                    if level == 'Insufficient_Weight':
+                        return "Abaixo do peso"
+                    elif level == 'Normal_Weight':
+                        return "Peso normal"
+                    elif level in ['Overweight_Level_I', 'Overweight_Level_II']:
+                        return "Sobrepeso"
+                    else:
+                        return "Obeso"
+
+                resultado_final = normalize(resultado_raw)
+
+                # Exibição
+                st.success(f"### Resultado: {resultado_final}")
+                st.info(f"**Classificação Detalhada:** {resultado_raw.replace('_', ' ')}")
+                st.info(f"**IMC Calculado:** {imc_input:.2f}")
+
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
@@ -145,4 +164,5 @@ with tab3:
     </iframe>
     """
     components.html(looker_html, height=620)
+
 
