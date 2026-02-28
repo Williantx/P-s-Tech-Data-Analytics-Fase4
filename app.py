@@ -12,22 +12,17 @@ st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 
 # Caminhos locais
 MODEL_PATH = 'modelo_obesidade.pkl'
-LE_PATH = 'label_encoder.pkl'
 DATA_PATH = 'Obesity.csv'
 
 # Carregar o modelo e o encoder
 @st.cache_resource
-def carregar_recursos():
-    if not os.path.exists(MODEL_PATH) or not os.path.exists(LE_PATH):
-        st.error("Erro: Arquivos 'modelo_obesidade.pkl' ou 'label_encoder.pkl' não encontrados.")
-        return None, None
-    try:
-        modelo = joblib.load(MODEL_PATH)
-        encoder = joblib.load(LE_PATH)
-        return modelo, encoder
-    except Exception as e:
-        st.error(f"Erro ao carregar arquivos: {e}")
-        return None, None
+def carregar_modelo():
+    if not os.path.exists(MODEL_PATH):
+        st.error(f"Erro: Arquivo '{MODEL_PATH}' não encontrado na pasta local.")
+        return None
+    return joblib.load(MODEL_PATH)
+
+pipeline = carregar_modelo()
 
 pipeline, le = carregar_recursos()
 
@@ -176,6 +171,7 @@ with tab3:
         height=700,
         scrolling=True
     )
+
 
 
 
