@@ -35,7 +35,7 @@ st.subheader("Hospital Vita Nova - Clínica de Diagnóstico") [cite: 3]
 st.markdown("---")
 
 # Definição das Abas
-tab1, tab2, tab3 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"])
+tab1, tab2 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico")
 
 # --- TAB 1: FORMULÁRIO E PREDIÇÃO ---
 with tab1:
@@ -103,35 +103,10 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
-# --- TAB 2: DASHBOARD NATIVO (PLOTLY) ---
-with tab2:
-    st.header("📊 Indicadores da Clínica")
-    
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Pacientes Analisados", "2.111") [cite: 25]
-    m2.metric("Peso Médio", "86,59 kg") [cite: 27]
-    m3.metric("Idade Média", "24 anos") [cite: 28]
-    
-    st.markdown("---")
-    
-    g1, g2 = st.columns(2)
-    with g1:
-        st.subheader("Distribuição de Obesidade")
-        fig_p = px.pie(
-            names=['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
-            values=[16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9], [cite: 5, 6, 7, 8, 9, 10, 11]
-            hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(fig_p, use_container_width=True)
-        
-    with g2:
-        st.subheader("Transporte e Sedentarismo")
-        d_transp = {'Meio': ['Público', 'Automóvel', 'Caminhada'], 'Qtd': [1558, 463, 88]} [cite: 48, 53, 62]
-        fig_t = px.bar(d_transp, x='Meio', y='Qtd', color='Meio', text_auto=True)
-        st.plotly_chart(fig_t, use_container_width=True)
+
 
 # --- TAB 3: RELATÓRIO LOOKER STUDIO ---
-with tab3:
+with tab2:
     st.header("📝 Relatório Detalhado (Looker Studio)")
     
     looker_html = """
@@ -144,3 +119,4 @@ with tab3:
     components.html(looker_html, height=620)
     
     st.info("💡 **Insight:** O histórico familiar é o fator com maior correlação positiva nos casos de obesidade nível III.") [cite: 30]
+
