@@ -166,6 +166,7 @@ with tab3:
         sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
     </iframe>
     """
-    components.html(looker_html, height=620)
+    components.html(looker_html, height=600)
     
     st.info("💡 Insight: O histórico familiar e o sedentarismo no transporte são os principais fatores identificados na amostra de 2.111 pacientes.")
+
