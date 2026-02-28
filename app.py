@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 # 1. Configuração da Página
 st.set_page_config(page_title="Sistema de Diagnóstico - Obesidade", layout="wide")
 
-# Caminhos dos arquivos (Certifique-se de que estão no seu GitHub)
+# Caminhos dos arquivos
 MODEL_PATH = 'modelo_obesidade.pkl'
 LE_PATH = 'label_encoder.pkl'
 DATA_PATH = 'Obesity.csv'
@@ -17,7 +17,7 @@ DATA_PATH = 'Obesity.csv'
 @st.cache_resource
 def carregar_recursos():
     if not os.path.exists(MODEL_PATH) or not os.path.exists(LE_PATH):
-        st.error("Erro: Arquivos 'modelo_obesidade.pkl' ou 'label_encoder.pkl' não encontrados no repositório.")
+        st.error("Erro: Arquivos 'modelo_obesidade.pkl' ou 'label_encoder.pkl' não encontrados.")
         return None, None
     try:
         modelo = joblib.load(MODEL_PATH)
@@ -31,18 +31,17 @@ pipeline, le = carregar_recursos()
 
 # 3. Cabeçalho Principal
 st.title("🏥 Sistema de Apoio ao Diagnóstico de Obesidade")
-st.subheader("Hospital Vita Nova - Clínica de Diagnóstico") [cite: 3]
+st.subheader("Hospital Vita Nova - Clínica de Diagnóstico")
 st.markdown("---")
 
-# Definição das Abas
-tab1, tab2 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico")
+# Definição das Abas - CORRIGIDO
+tab1, tab2, tab3 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"])
 
 # --- TAB 1: FORMULÁRIO E PREDIÇÃO ---
 with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
-    # Dicionários de Tradução (Visual PT -> Modelo EN)
     mapa_genero = {'Masculino': 'Female', 'Feminino': 'Male'} 
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
     mapa_frequencia = {'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 'Sempre': 'Always', 'Não': 'no'}
@@ -53,9 +52,9 @@ with tab1:
 
     with col1:
         genero_v = st.selectbox("Gênero", list(mapa_genero.keys()))
-        idade = st.number_input("Idade", 1, 120, 24) [cite: 28]
+        idade = st.number_input("Idade", 1, 120, 24)
         altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
-        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59) [cite: 27]
+        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59)
         hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
 
     with col2:
@@ -68,7 +67,7 @@ with tab1:
     with col3:
         ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
         scc = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
-        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1) # Linha corrigida
+        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
         tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
         calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
         mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
@@ -103,11 +102,36 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
-
-
-# --- TAB 3: RELATÓRIO LOOKER STUDIO ---
+# --- TAB 2: DASHBOARD NATIVO ---
 with tab2:
-    st.header("📝 Relatório Detalhado (Looker Studio)")
+    st.header("📊 Indicadores da Clínica")
+    
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Pacientes Analisados", "2.111")
+    m2.metric("Peso Médio", "86,59 kg")
+    m3.metric("Idade Média", "24 anos")
+    
+    st.markdown("---")
+    
+    g1, g2 = st.columns(2)
+    with g1:
+        st.subheader("Distribuição de Obesidade")
+        fig_p = px.pie(
+            names=['Obesidade I', 'Obesidade III', 'Obesidade II', 'Sobrepeso II', 'Sobrepeso I', 'Peso Normal', 'Abaixo do Peso'],
+            values=[16.6, 15.3, 14.1, 13.7, 13.7, 13.6, 12.9],
+            hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        st.plotly_chart(fig_p, use_container_width=True)
+        
+    with g2:
+        st.subheader("Transporte e Sedentarismo")
+        d_transp = {'Meio': ['Público', 'Automóvel', 'Caminhada'], 'Qtd': [1558, 463, 88]}
+        fig_t = px.bar(d_transp, x='Meio', y='Qtd', color='Meio', text_auto=True)
+        st.plotly_chart(fig_t, use_container_width=True)
+
+# --- TAB 3: LOOKER STUDIO ---
+with tab3:
+    st.header("📝 Relatório Detalhado")
     
     looker_html = """
     <iframe width="100%" height="600" 
@@ -117,6 +141,3 @@ with tab2:
     </iframe>
     """
     components.html(looker_html, height=620)
-    
-    st.info("💡 **Insight:** O histórico familiar é o fator com maior correlação positiva nos casos de obesidade nível III.") [cite: 30]
-
