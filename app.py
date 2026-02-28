@@ -34,15 +34,15 @@ st.title("🏥 Sistema de Apoio ao Diagnóstico de Obesidade")
 st.subheader("Hospital Vita Nova - Clínica de Diagnóstico")
 st.markdown("---")
 
-# Definição das Abas - CORRIGIDO
+# Definição das Abas
 tab1, tab2, tab3 = st.tabs(["🔮 Predição Clínica", "📊 Dashboard Analítico", "📝 Relatórios e Insights"])
 
-# --- TAB 1: PREDIÇÃO CLÍNICA ---
+# --- TAB 1: FORMULÁRIO E PREDIÇÃO ---
 with tab1:
     st.header("Formulário do Paciente")
     col1, col2, col3 = st.columns(3)
 
-    # Dicionários de Tradução para o Modelo
+    # Dicionários de Tradução (Visual PT -> Modelo EN)
     mapa_genero = {'Masculino': 'Female', 'Feminino': 'Male'} 
     mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
     mapa_frequencia = {'Às vezes': 'Sometimes', 'Frequentemente': 'Frequently', 'Sempre': 'Always', 'Não': 'no'}
@@ -53,9 +53,9 @@ with tab1:
 
     with col1:
         genero_v = st.selectbox("Gênero", list(mapa_genero.keys()))
-        idade = st.number_input("Idade", 1, 120, 24) [cite: 27]
+        idade = st.number_input("Idade", 1, 120, 24)
         altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
-        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59) [cite: 26]
+        peso = st.number_input("Peso (kg)", 10.0, 300.0, 86.59)
         hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
 
     with col2:
@@ -68,17 +68,17 @@ with tab1:
     with col3:
         ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
         scc = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
-        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1) [cite: 17]
+        faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
         tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
         calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
-        mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys())) [cite: 44]
+        mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
 
     if st.button("Realizar Diagnóstico"):
         if pipeline and le:
-            # O IMC deve ser calculado antes pois é uma coluna de entrada do modelo
+            # Cálculo do IMC como feature de entrada para o modelo
             imc_input = peso / (altura ** 2)
             
-            # DataFrame com os nomes exatos exigidos pelo erro anterior
+            # DataFrame com os nomes exatos exigidos pelo seu modelo treinado
             df_input = pd.DataFrame({
                 'genero': [mapa_genero[genero_v]],
                 'idade': [idade],
@@ -104,7 +104,7 @@ with tab1:
                 pred_codificada = pipeline.predict(df_input)
                 resultado_raw = le.inverse_transform(pred_codificada)[0]
 
-                # Sua Lógica de Normalização
+                # Lógica de Normalização Integrada
                 def normalize(level):
                     if level == 'Insufficient_Weight':
                         return "Abaixo do peso"
@@ -125,10 +125,11 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro na predição: {e}")
 
-# --- TAB 2: DASHBOARD NATIVO ---
+# --- TAB 2: DASHBOARD NATIVO (PLOTLY) ---
 with tab2:
     st.header("📊 Indicadores da Clínica")
     
+    # Métricas baseadas no relatório técnico Hospital Vita Nova
     m1, m2, m3 = st.columns(3)
     m1.metric("Pacientes Analisados", "2.111")
     m2.metric("Peso Médio", "86,59 kg")
@@ -148,14 +149,16 @@ with tab2:
         
     with g2:
         st.subheader("Transporte e Sedentarismo")
+        # Dados do seu relatório de mobilidade
         d_transp = {'Meio': ['Público', 'Automóvel', 'Caminhada'], 'Qtd': [1558, 463, 88]}
         fig_t = px.bar(d_transp, x='Meio', y='Qtd', color='Meio', text_auto=True)
         st.plotly_chart(fig_t, use_container_width=True)
 
-# --- TAB 3: LOOKER STUDIO ---
+# --- TAB 3: RELATÓRIO LOOKER STUDIO ---
 with tab3:
-    st.header("📝 Relatório Detalhado")
+    st.header("📝 Relatório Detalhado (Looker Studio)")
     
+    # Iframe com sandbox configurado
     looker_html = """
     <iframe width="100%" height="600" 
         src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" 
@@ -164,5 +167,5 @@ with tab3:
     </iframe>
     """
     components.html(looker_html, height=620)
-
-
+    
+    st.info("💡 Insight: O histórico familiar e o sedentarismo no transporte são os principais fatores identificados na amostra de 2.111 pacientes.")
