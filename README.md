@@ -11,10 +11,14 @@ O sistema está dividido em três módulos principais:
 
 📝 Relatórios e Insights: Integração com Looker Studio via iframe para consultas detalhadas e relatórios dinâmicos externos.
 
+https://lookerstudio.google.com/u/0/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF
+
 🛠️ Tecnologias Utilizadas
 Linguagem: Python 3.x
 
 Interface Web: Streamlit
+
+https://p-s-tech-data-analytics-fase4-76epkgdr4mny4khaudkkse.streamlit.app/
 
 Machine Learning: Scikit-Learn (Pipeline e Label Encoding)
 
