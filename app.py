@@ -155,18 +155,23 @@ with tab2:
         st.plotly_chart(fig_t, use_container_width=True)
 
 # --- TAB 3: RELATÓRIO LOOKER STUDIO ---
-with tab3:
-    st.header("📝 Relatório Detalhado (Looker Studio)")
+    st.header("📝 Relatórios e Insights")
     
-    # Iframe com sandbox configurado
-    looker_html = """
-    <iframe width="100%" height="600" 
-        src="https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF" 
-        frameborder="0" style="border:0" allowfullscreen 
-        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-    </iframe>
-    """
-    components.html(looker_html, height=600)
+    # Botão de link direto
+    st.link_button("🚀 Abrir Relatório Completo no Looker Studio", 
+                   "https://lookerstudio.google.com/u/0/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF")
+
+    st.markdown("---")
+    
+    # Mantendo o iframe caso queira que o usuário visualize sem sair da página
+    st.subheader("Visualização Rápida")
+    st.components.v1.iframe(
+        "https://lookerstudio.google.com/embed/reporting/29f80ed0-090c-437e-a0e8-a3fd3b00e5be/page/2V5oF",
+        height=700,
+        scrolling=True
+    )
+
     
     st.info("💡 Insight: O histórico familiar e o sedentarismo no transporte são os principais fatores identificados na amostra de 2.111 pacientes.")
+
 
