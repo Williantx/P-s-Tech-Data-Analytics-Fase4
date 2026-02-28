@@ -7,9 +7,11 @@ import plotly.express as px
 # 1. Configuração da Página
 st.set_page_config(page_title="Predição de Obesidade", layout="wide")
 
+# Caminhos dos arquivos
 MODEL_PATH = 'modelo_obesidade.pkl'
 ENCODER_PATH = 'label_encoder.pkl'
 
+# 2. Função de Carregamento de Recursos
 @st.cache_resource
 def carregar_recursos():
     if not os.path.exists(MODEL_PATH):
@@ -17,16 +19,22 @@ def carregar_recursos():
         return None, None
     try:
         dados = joblib.load(MODEL_PATH)
+        # Se o .pkl contiver [modelo, encoder]
         if isinstance(dados, (list, tuple)) and len(dados) == 2:
             return dados[0], dados[1]
-        return dados, None
+        
+        # Se contiver apenas o modelo, tenta carregar encoder separado
+        pipeline = dados
+        le = joblib.load(ENCODER_PATH) if os.path.exists(ENCODER_PATH) else None
+        return pipeline, le
     except Exception as e:
         st.error(f"Erro ao carregar recursos: {e}")
         return None, None
 
+# Chamada da função corrigida
 pipeline, le = carregar_recursos()
 
-# --- INTERFACE ---
+# 3. Interface Principal
 st.title("🏥 Sistema de Apoio ao Diagnóstico de Obesidade")
 st.markdown("---")
 
@@ -36,54 +44,53 @@ with tab1:
     st.header("Formulário do Paciente")
     
     if pipeline is None:
-        st.error("Modelo não carregado corretamente.")
+        st.warning("Aguardando carregamento do modelo...")
     else:
         col1, col2, col3 = st.columns(3)
 
-    # --- Dicionários de Tradução (Visual -> Modelo) ---
-    mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
-    mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
-    mapa_frequencia = {
-        'Às vezes': 'Sometimes', 
-        'Frequentemente': 'Frequently', 
-        'Sempre': 'Always', 
-        'Não': 'no'
-    }
-    mapa_transporte = {
-        'Transporte Público': 'Public_Transportation', 
-        'Caminhada': 'Walking', 
-        'Carro': 'Automobile', 
-        'Moto': 'Motorbike', 
-        'Bicicleta': 'Bike'
-    }
-
+        # Dicionários de Tradução (Visual -> Modelo)
+        mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
+        mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
+        mapa_frequencia = {
+            'Às vezes': 'Sometimes', 
+            'Frequentemente': 'Frequently', 
+            'Sempre': 'Always', 
+            'Não': 'no'
+        }
+        mapa_transporte = {
+            'Transporte Público': 'Public_Transportation', 
+            'Caminhada': 'Walking', 
+            'Carro': 'Automobile', 
+            'Moto': 'Motorbike', 
+            'Bicicleta': 'Bike'
+        }
 
         with col1:
-            genero = st.selectbox("Gênero", ["Masculino", "Feminino"])
+            genero = st.selectbox("Gênero", list(mapa_genero.keys()))
             idade = st.number_input("Idade", 1, 120, 25)
             altura = st.number_input("Altura (m)", 0.5, 2.5, 1.70)
             peso = st.number_input("Peso (kg)", 10.0, 300.0, 70.0)
+            hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", list(mapa_sim_nao.keys()))
 
         with col2:
-            hist_fam = st.selectbox("Histórico Familiar de Sobrepeso?", ["Sim", "Não"])
-            favc = st.selectbox("Consome comida calórica frequentemente?", ["Sim", "Não"])
-            fcvc = st.slider("Frequência de vegetais (1-3)", 1, 3, 2)
-            ncp = st.slider("Refeições principais", 1, 4, 3)
-            caec = st.selectbox("Come entre refeições?", ['Sometimes', 'Frequently', 'Always', 'no'])
+            favc = st.selectbox("Consome comida calórica frequentemente?", list(mapa_sim_nao.keys()))
+            fcvc = st.slider("Frequência de consumo de vegetais (1-3)", 1, 3, 2)
+            ncp = st.slider("Número de refeições principais", 1, 4, 3)
+            caec = st.selectbox("Come entre refeições?", list(mapa_frequencia.keys()))
+            smoke = st.selectbox("Fumante?", list(mapa_sim_nao.keys()))
 
         with col3:
-            smoke = st.selectbox("Fumante?", ["Sim", "Não"])
-            ch2o = st.slider("Consumo de água (1-3)", 1, 3, 2)
-            scc = st.selectbox("Monitora calorias?", ["Sim", "Não"])
-            faf = st.slider("Atividade física (0-3)", 0, 3, 1)
-            tue = st.slider("Uso de eletrônicos (0-2)", 0, 2, 1)
-            calc = st.selectbox("Consumo de álcool", ['Sometimes', 'Frequently', 'Always', 'no'])
-            mtrans = st.selectbox("Meio de transporte", ['Public_Transportation', 'Walking', 'Automobile', 'Motorbike', 'Bike'])
+            ch2o = st.slider("Consumo de água diário (1-3L)", 1, 3, 2)
+            scc = st.selectbox("Monitora calorias ingeridas?", list(mapa_sim_nao.keys()))
+            faf = st.slider("Frequência de atividade física (0-3)", 0, 3, 1)
+            tue = st.slider("Tempo usando dispositivos (0-2)", 0, 2, 1)
+            calc = st.selectbox("Consumo de álcool", list(mapa_frequencia.keys()))
+            mtrans = st.selectbox("Meio de transporte principal", list(mapa_transporte.keys()))
 
         if st.button("Realizar Diagnóstico"):
             try:
-                # DICIONÁRIO COM OS NOMES EXATOS QUE O SEU ERRO PEDIU
-                dados_paciente = {
+                # DataFrame com os nomes exatos exigidos pelo seu modelo
+                df_input = pd.DataFrame({
                     'genero': [mapa_genero[genero]],
                     'idade': [idade],
                     'altura_m': [altura],
@@ -92,30 +99,23 @@ with tab1:
                     'come_comida_calorica_freq': [mapa_sim_nao[favc]],
                     'freq_consumo_vegetais': [fcvc],
                     'num_refeicoes_principais': [ncp],
-                    'come_entre_refeicoes': [caec],
+                    'come_entre_refeicoes': [mapa_frequencia[caec]],
                     'fumante': [mapa_sim_nao[smoke]],
                     'consumo_agua_litros': [ch2o],
                     'monitora_calorias': [mapa_sim_nao[scc]],
                     'freq_atividade_fisica': [faf],
                     'tempo_uso_dispositivos': [tue],
-                    'freq_consumo_alcool': [calc],
-                    'meio_transporte': [mtrans]
-                }
+                    'freq_consumo_alcool': [mapa_frequencia[calc]],
+                    'meio_transporte': [mapa_transporte[mtrans]]
+                })
 
-                df_input = pd.DataFrame(dados_paciente)
-
+                # Predição
                 pred = pipeline.predict(df_input)
                 
+                # Descodificação do resultado
                 if le:
                     resultado = le.inverse_transform(pred)[0]
                 else:
                     resultado = pred[0]
 
-                st.success(f"### Resultado: {resultado}")
-                st.info(f"**IMC:** {peso/(altura**2):.2f}")
-                
-            except Exception as e:
-                st.error(f"Erro na predição: {e}")
-
-# (Abas 2 e 3 permanecem as mesmas do código anterior)
-
+                st.success(f"### Diagnóstico Sugerido: {resultado}")
