@@ -40,9 +40,23 @@ with tab1:
     else:
         col1, col2, col3 = st.columns(3)
 
-        # Mapeamentos ajustados para os valores que o seu modelo espera (verifique se é 'yes'/'no' ou 'Sim'/'Não')
-        mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
-        mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
+    # --- Dicionários de Tradução (Visual -> Modelo) ---
+    mapa_genero = {'Masculino': 'Male', 'Feminino': 'Female'}
+    mapa_sim_nao = {'Sim': 'yes', 'Não': 'no'}
+    mapa_frequencia = {
+        'Às vezes': 'Sometimes', 
+        'Frequentemente': 'Frequently', 
+        'Sempre': 'Always', 
+        'Não': 'no'
+    }
+    mapa_transporte = {
+        'Transporte Público': 'Public_Transportation', 
+        'Caminhada': 'Walking', 
+        'Carro': 'Automobile', 
+        'Moto': 'Motorbike', 
+        'Bicicleta': 'Bike'
+    }
+
 
         with col1:
             genero = st.selectbox("Gênero", ["Masculino", "Feminino"])
@@ -104,3 +118,4 @@ with tab1:
                 st.error(f"Erro na predição: {e}")
 
 # (Abas 2 e 3 permanecem as mesmas do código anterior)
+
